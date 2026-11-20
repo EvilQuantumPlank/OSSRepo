@@ -1,0 +1,42 @@
+name: PR Verification TEST
+run-name: "PR Verification / TEST PR #${{ inputs.pr_number }} SHA ${{ inputs.head_sha }} ID ${{ inputs.dispatch_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        required: true
+        type: string
+      head_sha:
+        required: true
+        type: string
+      head_repo:
+        required: true
+        type: string
+      head_ref:
+        required: true
+        type: string
+      head_label:
+        required: true
+        type: string
+      dispatch_id:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test PR commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.head_repo }}
+          ref: ${{ inputs.head_sha }}
+          persist-credentials: false
+      - name: Replace with project test command
+        run: |
+          echo "TODO: configure the repository's test command before using this required check."
+          exit 1

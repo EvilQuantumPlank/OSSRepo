@@ -1,0 +1,51 @@
+name: PR Verification SCA
+run-name: "PR Verification / SCA PR #${{ inputs.pr_number }} SHA ${{ inputs.head_sha }} ID ${{ inputs.dispatch_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
+      head_sha:
+        description: Pull request head commit
+        required: true
+        type: string
+      head_repo:
+        description: Repository containing the pull request head
+        required: true
+        type: string
+      head_ref:
+        description: Pull request branch
+        required: true
+        type: string
+      head_label:
+        description: Owner and branch for pull request head
+        required: true
+        type: string
+      dispatch_id:
+        description: App-generated identifier for this check run
+        required: true
+        type: string
+
+permissions:
+  pull-requests: read
+
+jobs:
+  sca:
+    name: Dummy malicious marker scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if an added PR line contains MALICIOUS
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh pr diff "$PR_NUMBER" --repo "$REPOSITORY" > "$RUNNER_TEMP/pr.diff"
+          if awk '/^\+\+\+ / { next } /^\+/ && index($0, "MALICIOUS") { found = 1 } END { exit found ? 0 : 1 }' "$RUNNER_TEMP/pr.diff"; then
+            echo "::error::An added PR line contains the forbidden marker MALICIOUS."
+            exit 1
+          fi
+          echo "PR diff does not contain MALICIOUS."

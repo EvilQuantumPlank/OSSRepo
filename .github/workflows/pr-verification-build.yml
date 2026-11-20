@@ -1,0 +1,45 @@
+name: PR Verification BUILD
+run-name: "PR Verification / BUILD PR #${{ inputs.pr_number }} SHA ${{ inputs.head_sha }} ID ${{ inputs.dispatch_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        required: true
+        type: string
+      head_sha:
+        required: true
+        type: string
+      head_repo:
+        required: true
+        type: string
+      head_ref:
+        required: true
+        type: string
+      head_label:
+        required: true
+        type: string
+      dispatch_id:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build PR commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.head_repo }}
+          ref: ${{ inputs.head_sha }}
+          persist-credentials: false
+      - name: Randomly pass or fail the demo build
+        run: |
+          if (( RANDOM % 2 == 0 )); then
+            echo "Demo build randomly failed."
+            exit 1
+          fi
+          echo "Demo build randomly passed."
